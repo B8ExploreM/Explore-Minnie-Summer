@@ -1,4 +1,5 @@
 import './App.css'
+import AboutMe from './components/AboutMe'
 
 function App() {
   return (
@@ -54,9 +55,10 @@ function App() {
           </ul>
         </div>
       </section>
-
       <div className="ticks"></div>
-      <section id="spacer"></section>
+      <section id="spacer">
+      <AboutMe/>
+      </section>
     </>
   )
 }
