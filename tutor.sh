@@ -72,11 +72,11 @@ function verifyListDir() {
 	done
 }
 
-function validateDjango() {
-	#validate script integrity of script for security reasons, then run on directory.
-
-	#validate django files using python script
-}
+#function validateDjango() {
+#	#validate script integrity of script for security reasons, then run on directory.
+#
+#	#validate django files using python script
+#}
 
 function checkRegen() {
 	if ["$prompt"  == "djangoRegen" ]; then
