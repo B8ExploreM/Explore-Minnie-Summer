@@ -6,6 +6,10 @@ GREEN="\e[32m"
 BLUE="\e[34m"
 RESET="\e[0m"
 
+
+#This Script looks for exact matches for its string prompts to prevent malicious code from being injected.
+#If modified for more lax prompting, ensure that strings are escaped properly. 
+
 usrPrompt() {
     local display_dir="${PWD/#$HOME/~}"
     printf "${GREEN}(Minnie)${BLUE} %s \$ ${RESET}" "$display_dir"
@@ -17,7 +21,7 @@ find_helloproj="Let's begin by locating the hello project directory, use the com
 
 cmdERR="There was an issue with your command, check your spelling and try again."
 
-promptUser() {
+prompt_user() {
     read -e -p "$(usrPrompt)" prompt
 }
 
@@ -32,12 +36,12 @@ function verifyCD() {
 
                 else
                 echo "$cmdERR"
-                promptUser
+                prompt_user
                 continue
                 fi
         else
                 echo "$cmdERR"
-                promptUser
+                prompt_user
         fi
  done
 }
@@ -49,50 +53,79 @@ function verifyPWD() {
                         verified="true"
                         eval $prompt
                 else
-                echo "$cmdERR"   
-                promptUser   
+                echo "$cmdERR"
+                prompt_user
                 fi
-        done            
+        done
 }
 
-function verifySetup() {
-	echo "Checking Django project is present."
+function verifyListDir() {
 	verified="false"
-	#test call here is represented by [] brackets
-	if [ -d "hello_project" ]; then
-		if [[ -f "hello_project/urls.py" && -f "hello_project/views.py" ]]; then
-		verified="true"
-		echo "Project found."
+	while [ "$verified" == "false" ]; do
+		if [ "$prompt" == "ls -l" ]; then
+			verified="true"
+			eval $prompt
 		else
-			echo "Failed to find project files, please contact an administrator."
-			echo "aborting"
-			exit
+		echo "$cmdERR"
+		prompt_user
 		fi
-	else
-	echo "Failed to find project directory, please contact system administrator."
-	exit
+	done
+}
+
+function validateDjango() {
+	#validate script integrity of script for security reasons, then run on directory.
+
+	#validate django files using python script
+}
+
+function checkRegen() {
+	if ["$prompt"  == "djangoRegen" ]; then
+	regenScript
 	fi
 }
 
-verifySetup
-
 echo $intro
 echo $find_helloproj
-echo
 
-promptUser
-expectedPWD="${PWD}/hello_project"
+prompt_user
+expectedPWD="${HOME}/Documents/cs410/script_dev/hello_project"
 
 verifyCD
 
 echo "You should now be in the hello project folder, you can verify this by using the pwd command, try it now."
 echo
 
-promptUser
+prompt_user
 verifyPWD
 
 echo
-listDir="Now that we've verified we are in the right place, let's explore the files in this directory. Using \"ls -l\" take a look at the files in this directory, then use the command \"cat urls.py\" To print the contents of the file."
-echo $listDir
-promptUser
+echo "Now that we've verified we are in the right place, let's explore the files in this directory."
+echo "Using \"ls -l\" take a look at the files in this directory, then use the command \"cat <filename>\" To print the contents of a file."
 
+prompt_user
+verifyListDir
+
+prompt_user
+verifyCat
+
+#Verify File integrity TODO: Move to script start
+filesValidated=validateDjango
+
+if [ filesValidated = "true" ]; then
+	echo
+	echo "Now it's time to get ready to make some changes on your own, \"nano views.py\" to open the nano text editor, then change the message in the view function."
+
+	verifyNano
+	filesValidated="false"
+	python3 validateDjango.py
+	status=$?
+	filesValidated=status
+	if [ "$filesValidated"=="true" ]; then
+	#Do something I guess
+	else
+		echo "Files are invalid, please rectify the file or consult an administrator for assistance."
+		echo "Try modifying the file, or if issue persists, run command djangoReset to regenerate and replace project files."
+		prompt_user
+		checkRegen
+		verifyNano
+		
