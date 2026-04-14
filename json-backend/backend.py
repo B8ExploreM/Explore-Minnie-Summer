@@ -1,9 +1,11 @@
 import json
 import os
+import subprocess
 from datetime import datetime, timezone
 
 
-STATE_FILE = "/home/{student}/json-backend/brains.json"
+STATE_FILE  = os.environ.get("TUTOR_STATE_FILE", "/home/{student}/json-backend/brains.json")
+PROJECT_DIR = os.environ.get("TUTOR_PROJECT_DIR", "/home/{student}/minnie")
 
 
 def load_state(student: str) -> dict:
@@ -57,6 +59,27 @@ def get_hints(state: dict) -> list:
     return get_current_step(state)["hints"]
 
 
+def validate_step(step: dict, student: str) -> bool:
+    v     = step.get("validation", {})
+    vtype = v.get("type")
+    if vtype == "inotifywait":
+        target = os.path.join(PROJECT_DIR.format(student=student), v["target_file"])
+        if v.get("check") == "exists":
+            return os.path.exists(target)
+        if v.get("check") == "modified":
+            return os.path.exists(target)
+    if vtype == "curl_probe":
+        result = subprocess.run(
+            ["curl", "-s", "-o", "/dev/null", "-w", "%{http_code}", "--max-time", "5", v["url"]],
+            capture_output=True, text=True,
+        )
+        try:
+            return int(result.stdout.strip()) == v.get("expected_status", 200)
+        except ValueError:
+            return False
+    return False
+
+
 def record_command(state: dict, cmd: str, exit_code: int, student: str) -> None:
     state["progress"]["last_exit_code"] = exit_code
     state["session"]["command_history"].append(cmd)
@@ -80,7 +103,14 @@ if __name__ == "__main__":
 
     if args.validate is not None:
         record_command(state, args.cmd, args.validate, args.student)
-        # Step validator logic will hook in here next
+        step = get_current_step(state)
+        if step and not step.get("completed"):
+            if validate_step(step, args.student):
+                advance_step(state, args.student)
+                print(f"✓ Step {step['id']} complete!")
+            else:
+                for hint in step.get("hints", []):
+                    print(f"  → {hint}")
 
     elif args.flush:
         save_state(state, args.student)

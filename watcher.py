@@ -7,8 +7,8 @@ from datetime import datetime, timezone
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-STATE_FILE  = "/home/{student}/json-backend/brains.json"
-PROJECT_DIR = "/home/{student}/minnie"  # CHANGE THIS to the actual project path on minnie
+STATE_FILE  = os.environ.get("TUTOR_STATE_FILE", "/home/{student}/json-backend/brains.json")
+PROJECT_DIR = os.environ.get("TUTOR_PROJECT_DIR", "/home/{student}/minnie")
 
 DEBOUNCE_SECONDS = 1.5
 POLL_INTERVAL    = 3

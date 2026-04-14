@@ -6,9 +6,27 @@ GREEN="\e[32m"
 BLUE="\e[34m"
 RESET="\e[0m"
 
+# --- Integration setup ---
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+STUDENT="${USER:-$(whoami)}"
+export TUTOR_STATE_FILE="${SCRIPT_DIR}/json-backend/brains.json"
+export TUTOR_PROJECT_DIR="${SCRIPT_DIR}/hello_project"
+
+# Start watcher.py in the background
+python3 "${SCRIPT_DIR}/watcher.py" --student "$STUDENT" &
+WATCHER_PID=$!
+# Kill watcher when tutor exits
+trap "kill $WATCHER_PID 2>/dev/null" EXIT
+
+# Helper: record completed command to backend
+record() {
+    python3 "${SCRIPT_DIR}/json-backend/backend.py" \
+        --student "$STUDENT" --validate 0 --cmd "$1"
+}
+# ---
 
 #This Script looks for exact matches for its string prompts to prevent malicious code from being injected.
-#If modified for more lax prompting, ensure that strings are escaped properly. 
+#If modified for more lax prompting, ensure that strings are escaped properly.
 
 usrPrompt() {
     local display_dir="${PWD/#$HOME/~}"
@@ -32,7 +50,8 @@ function verifyCD() {
                 eval $prompt
                 if [ "$PWD" == "$expectedPWD" ]; then
                  echo "You have successfully moved into the hello project directory!"
-                verified="true"
+                 record "$prompt"
+                 verified="true"
 
                 else
                 echo "$cmdERR"
@@ -52,6 +71,7 @@ function verifyPWD() {
                 if [ "$prompt" == "pwd" ]; then
                         verified="true"
                         eval $prompt
+                        record "$prompt"
                 else
                 echo "$cmdERR"
                 prompt_user
@@ -65,6 +85,7 @@ function verifyListDir() {
 		if [ "$prompt" == "ls -l" ]; then
 			verified="true"
 			eval $prompt
+			record "$prompt"
 		else
 		echo "$cmdERR"
 		prompt_user
@@ -72,11 +93,11 @@ function verifyListDir() {
 	done
 }
 
-function validateDjango() {
-	#validate script integrity of script for security reasons, then run on directory.
-
-	#validate django files using python script
-}
+#function validateDjango() {
+#	#validate script integrity of script for security reasons, then run on directory.
+#
+#	#validate django files using python script
+#}
 
 function checkRegen() {
 	if ["$prompt"  == "djangoRegen" ]; then
@@ -87,9 +108,9 @@ function checkRegen() {
 echo $intro
 echo $find_helloproj
 
-prompt_user
-expectedPWD="${HOME}/Documents/cs410/script_dev/hello_project"
+expectedPWD="$(cd "$(dirname "$0")" && pwd)/hello_project"
 
+prompt_user
 verifyCD
 
 echo "You should now be in the hello project folder, you can verify this by using the pwd command, try it now."
@@ -120,12 +141,13 @@ if [ filesValidated = "true" ]; then
 	python3 validateDjango.py
 	status=$?
 	filesValidated=status
-	if [ "$filesValidated"=="true" ]; then
-	#Do something I guess
+	if [ "$filesValidated" == "true" ]; then
+		: #Do something I guess
 	else
 		echo "Files are invalid, please rectify the file or consult an administrator for assistance."
 		echo "Try modifying the file, or if issue persists, run command djangoReset to regenerate and replace project files."
 		prompt_user
 		checkRegen
 		verifyNano
-		
+	fi
+fi
