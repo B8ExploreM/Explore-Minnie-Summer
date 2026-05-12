@@ -105,7 +105,10 @@ if __name__ == "__main__":
         record_command(state, args.cmd, args.validate, args.student)
         step = get_current_step(state)
         if step and not step.get("completed"):
-            if validate_step(step, args.student):
+            vtype = step.get("validation", {}).get("type")
+            if vtype == "curl_probe":
+                pass  # watcher.py handles curl_probe steps via polling
+            elif validate_step(step, args.student):
                 advance_step(state, args.student)
                 print(f"✓ Step {step['id']} complete!")
             else:

@@ -77,5 +77,26 @@ echo "=== TEST 5: --flush ==="
 python3 json-backend/backend.py --student "$STUDENT" --flush
 
 echo ""
+echo "=== TEST 6: verifyCatUrls — simulate 'cat urls.py' prompt (should pass and record) ==="
+# Create a dummy urls.py in the project dir for cat to read
+echo "# dummy urls.py" > "$PROJECT_DIR/urls.py"
+# Simulate what tutor.sh does: prompt="cat urls.py", then record is called
+prompt="cat urls.py"
+cat "$PROJECT_DIR/urls.py" && \
+python3 json-backend/backend.py --student "$STUDENT" --validate 0 --cmd "$prompt"
+
+echo ""
+echo "=== TEST 7: verifyCatViews — simulate 'cat views.py' prompt (should pass and record) ==="
+# Create a dummy views.py in the project dir for cat to read
+echo "# dummy views.py" > "$PROJECT_DIR/views.py"
+prompt="cat views.py"
+cat "$PROJECT_DIR/views.py" && \
+python3 json-backend/backend.py --student "$STUDENT" --validate 0 --cmd "$prompt"
+
+echo ""
+echo "=== TEST 8: verifyCatUrls — wrong command (should show hints if step not complete) ==="
+python3 json-backend/backend.py --student "$STUDENT" --validate 1 --cmd "cat wrongfile.py"
+
+echo ""
 echo "=== Final state ==="
 python3 -c "import json; s=json.load(open('$STATE_FILE')); print(json.dumps(s['progress'], indent=2))"

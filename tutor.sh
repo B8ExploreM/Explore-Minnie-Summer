@@ -93,6 +93,36 @@ function verifyListDir() {
 	done
 }
 
+
+function verifyCatUrls(){
+        verified="false"
+        while [ "$verified" == "false" ]; do
+                if [ "$prompt" == "cat urls.py" ]; then 
+                        verified="true"
+                        eval $prompt
+                        record "$prompt"
+                else
+                echo "$cmdERR"
+                prompt_user
+                fi
+        done
+}
+
+function verifyCatViews(){
+        verified="false"
+        while [ "$verified" == "false" ]; do
+                if [ "$prompt" == "cat views.py" ]; then 
+                        verified="true"
+                        eval $prompt
+                        record "$prompt"
+                else
+                echo "$cmdERR"
+                prompt_user
+                fi
+        done
+}
+
+
 #function validateDjango() {
 #	#validate script integrity of script for security reasons, then run on directory.
 #
@@ -126,8 +156,18 @@ echo "Using \"ls -l\" take a look at the files in this directory, then use the c
 prompt_user
 verifyListDir
 
+echo
+echo "Great job, now you can see the list of all the files in your working directory. Use \"cat urls.py\" to print your urls.py file."
+
 prompt_user
-verifyCat
+verifyCatUrls
+
+echo
+echo "Good work, now print the contents of your views.py file" 
+
+prompt_user
+verifyCatViews
+
 
 #Verify File integrity TODO: Move to script start
 filesValidated=validateDjango

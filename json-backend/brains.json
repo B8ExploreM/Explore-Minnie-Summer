@@ -1,12 +1,15 @@
 {
   "meta": {
     "version": "1.0.0",
-    "student": "alice"
+    "student": "alice",
+    "last_saved": "2026-04-16T17:24:37.111852+00:00"
   },
   "progress": {
     "current_step": 2,
     "total_steps": 2,
-    "completed_steps": [1],
+    "completed_steps": [
+      1
+    ],
     "last_exit_code": 0
   },
   "steps": [
@@ -25,7 +28,10 @@
         "Try using the 'touch' command followed by a filename.",
         "Make sure you are in the correct directory."
       ],
-      "error_patterns": ["command not found", "No such file"]
+      "error_patterns": [
+        "command not found",
+        "No such file"
+      ]
     },
     {
       "id": 2,
@@ -42,12 +48,26 @@
         "Use python3 -m http.server followed by a port number.",
         "Check that port 8080 is not already in use."
       ],
-      "error_patterns": ["Connection refused", "Address already in use"]
+      "error_patterns": [
+        "Connection refused",
+        "Address already in use"
+      ]
     }
   ],
   "session": {
     "ssh_login_count": 3,
-    "command_history": ["ls", "touch hello.txt"],
+    "command_history": [
+      "ls",
+      "touch hello.txt",
+      "cd hello_project/",
+      "pwd",
+      "ls -l",
+      "cd hello_project/",
+      "pwd",
+      "ls -l",
+      "cat urls.py",
+      "cat views.py"
+    ],
     "dirty": false
   }
 }

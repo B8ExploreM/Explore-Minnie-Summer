@@ -100,7 +100,7 @@ class TutorHandler(FileSystemEventHandler):
             advance_step(state, self.student)
         else:
             for hint in step.get("hints", []):
-                print(f"  → {hint}")
+                print(f"  -> {hint}")
 
 
 def polling_loop(student):
