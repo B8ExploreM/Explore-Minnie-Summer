@@ -10,7 +10,7 @@ RESET="\e[0m"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 STUDENT="${USER:-$(whoami)}"
 export TUTOR_STATE_FILE="${SCRIPT_DIR}/json-backend/brains.json"
-export TUTOR_PROJECT_DIR="${SCRIPT_DIR}/hello_project"
+export TUTOR_PROJECT_DIR="${HOME}/hello_project"
 
 # Start watcher.py in the background
 python3 "${SCRIPT_DIR}/watcher.py" --student "$STUDENT" &
@@ -34,9 +34,7 @@ usrPrompt() {
 }
 
 intro="Welcome to the Minnie Server, this project will help you gain experience with backend development."
-
 find_helloproj="Let's begin by locating the hello project directory, use the command: cd hello_project/"
-
 cmdERR="There was an issue with your command, check your spelling and try again."
 
 prompt_user() {
@@ -44,102 +42,116 @@ prompt_user() {
 }
 
 function verifyCD() {
- verified="false"
- while [ "$verified" == "false" ]; do
+    verified="false"
+    while [ "$verified" == "false" ]; do
         if [ "$prompt" == "cd hello_project/" ]; then
-                eval $prompt
-                if [ "$PWD" == "$expectedPWD" ]; then
-                 echo "You have successfully moved into the hello project directory!"
-                 record "$prompt"
-                 verified="true"
-
-                else
+            eval $prompt
+            if [ "$PWD" == "$expectedPWD" ]; then
+                echo "You have successfully moved into the hello project directory!"
+                record "$prompt"
+                verified="true"
+            else
                 echo "$cmdERR"
                 prompt_user
                 continue
-                fi
+            fi
         else
-                echo "$cmdERR"
-                prompt_user
+            echo "$cmdERR"
+            prompt_user
         fi
- done
+    done
 }
 
 function verifyPWD() {
-        verified="false"
-        while [ "$verified" == "false" ]; do
-                if [ "$prompt" == "pwd" ]; then
-                        verified="true"
-                        eval $prompt
-                        record "$prompt"
-                else
-                echo "$cmdERR"
-                prompt_user
-                fi
-        done
+    verified="false"
+    while [ "$verified" == "false" ]; do
+        if [ "$prompt" == "pwd" ]; then
+            verified="true"
+            eval $prompt
+            record "$prompt"
+        else
+            echo "$cmdERR"
+            prompt_user
+        fi
+    done
 }
 
 function verifyListDir() {
-	verified="false"
-	while [ "$verified" == "false" ]; do
-		if [ "$prompt" == "ls -l" ]; then
-			verified="true"
-			eval $prompt
-			record "$prompt"
-		else
-		echo "$cmdERR"
-		prompt_user
-		fi
-	done
+    verified="false"
+    while [ "$verified" == "false" ]; do
+        if [ "$prompt" == "ls -l" ]; then
+            verified="true"
+            eval $prompt
+            record "$prompt"
+        else
+            echo "$cmdERR"
+            prompt_user
+        fi
+    done
 }
 
-
-function verifyCatUrls(){
-        verified="false"
-        while [ "$verified" == "false" ]; do
-                if [ "$prompt" == "cat urls.py" ]; then 
-                        verified="true"
-                        eval $prompt
-                        record "$prompt"
-                else
-                echo "$cmdERR"
-                prompt_user
-                fi
-        done
+function verifyCatUrls() {
+    verified="false"
+    while [ "$verified" == "false" ]; do
+        if [ "$prompt" == "cat urls.py" ]; then
+            verified="true"
+            eval $prompt
+            record "$prompt"
+        else
+            echo "$cmdERR"
+            prompt_user
+        fi
+    done
 }
 
-function verifyCatViews(){
-        verified="false"
-        while [ "$verified" == "false" ]; do
-                if [ "$prompt" == "cat views.py" ]; then 
-                        verified="true"
-                        eval $prompt
-                        record "$prompt"
-                else
-                echo "$cmdERR"
-                prompt_user
-                fi
-        done
+function verifyCatViews() {
+    verified="false"
+    while [ "$verified" == "false" ]; do
+        if [ "$prompt" == "cat views.py" ]; then
+            verified="true"
+            eval $prompt
+            record "$prompt"
+        else
+            echo "$cmdERR"
+            prompt_user
+        fi
+    done
 }
 
+function verifyNano() {
+    echo "Waiting for you to save your changes to views.py..."
+    echo "(watcher.py will detect when you save the file)"
+    verified="false"
+    while [ "$verified" == "false" ]; do
+        if [ "$prompt" == "nano views.py" ]; then
+            eval $prompt
+            verified="true"
+            record "$prompt"
+        else
+            echo "$cmdERR"
+            prompt_user
+        fi
+    done
+}
 
-#function validateDjango() {
-#	#validate script integrity of script for security reasons, then run on directory.
-#
-#	#validate django files using python script
-#}
-
-function checkRegen() {
-	if ["$prompt"  == "djangoRegen" ]; then
-	regenScript
-	fi
+function verifyWget() {
+    verified="false"
+    while [ "$verified" == "false" ]; do
+        if [ "$prompt" == "wget -qO- http://localhost/deploy/" ]; then
+            verified="true"
+            eval $prompt
+            record "$prompt"
+        else
+            echo "$cmdERR"
+            prompt_user
+        fi
+    done
 }
 
 echo $intro
 echo $find_helloproj
 
-expectedPWD="$(cd "$(dirname "$0")" && pwd)/hello_project"
-
+expectedPWD="${HOME}/hello_project"
 prompt_user
 verifyCD
 
@@ -163,31 +175,25 @@ prompt_user
 verifyCatUrls
 
 echo
-echo "Good work, now print the contents of your views.py file" 
+echo "Good work, now print the contents of your views.py file"
 
 prompt_user
 verifyCatViews
 
+echo
+echo "Now it's time to get ready to make some changes on your own, \"nano views.py\" to open the nano text editor, then change the message in the view function."
 
-#Verify File integrity TODO: Move to script start
-filesValidated=validateDjango
+prompt_user
+verifyNano
 
-if [ filesValidated = "true" ]; then
-	echo
-	echo "Now it's time to get ready to make some changes on your own, \"nano views.py\" to open the nano text editor, then change the message in the view function."
+echo
+echo "Your file has been saved. Now let's confirm your change is live on the server."
+echo "Run: wget -qO- http://localhost/deploy/"
+echo
+prompt_user
+verifyWget
 
-	verifyNano
-	filesValidated="false"
-	python3 validateDjango.py
-	status=$?
-	filesValidated=status
-	if [ "$filesValidated" == "true" ]; then
-		: #Do something I guess
-	else
-		echo "Files are invalid, please rectify the file or consult an administrator for assistance."
-		echo "Try modifying the file, or if issue persists, run command djangoReset to regenerate and replace project files."
-		prompt_user
-		checkRegen
-		verifyNano
-	fi
-fi
+echo
+echo "Congratulations! You have completed the Minnie backend development exercise."
+echo "You successfully edited a Django view and saw your change reflected on the server."
+echo
