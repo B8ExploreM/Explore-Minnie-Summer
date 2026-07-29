@@ -10,7 +10,7 @@ RESET="\e[0m"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 STUDENT="${USER:-$(whoami)}"
 export TUTOR_STATE_FILE="${SCRIPT_DIR}/json-backend/brains.json"
-export TUTOR_PROJECT_DIR="${HOME}/hello_project"
+export TUTOR_PROJECT_DIR="${SCRIPT_DIR}/hello_project"
 
 # Start watcher.py in the background
 python3 "${SCRIPT_DIR}/watcher.py" --student "$STUDENT" &
@@ -37,6 +37,7 @@ intro="Welcome to the Minnie Server, this project will help you gain experience 
 find_helloproj="Let's begin by locating the hello project directory, use the command: cd hello_project/"
 cmdERR="There was an issue with your command, check your spelling and try again."
 
+prompt="$(echo -n "$prompt" | xargs)"   # trims leading/trailing whitespace, collapses internal runs
 prompt_user() {
     read -e -p "$(usrPrompt)" prompt
 }
@@ -151,7 +152,7 @@ function verifyWget() {
 echo $intro
 echo $find_helloproj
 
-expectedPWD="${HOME}/hello_project"
+expectedPWD="${SCRIPT_DIR}/hello_project"
 prompt_user
 verifyCD
 

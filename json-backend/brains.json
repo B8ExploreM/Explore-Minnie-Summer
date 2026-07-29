@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0.0",
     "student": "alice",
-    "last_saved": "2026-04-16T17:24:37.111852+00:00"
+    "last_saved": "2026-07-27T16:55:06.184270+00:00"
   },
   "progress": {
     "current_step": 2,
@@ -66,7 +66,13 @@
       "pwd",
       "ls -l",
       "cat urls.py",
-      "cat views.py"
+      "cat views.py",
+      "cd hello_project/",
+      "pwd",
+      "ls -l",
+      "cat urls.py",
+      "cat views.py",
+      "nano views.py"
     ],
     "dirty": false
   }
