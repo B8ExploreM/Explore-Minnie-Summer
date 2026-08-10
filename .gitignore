@@ -248,3 +248,6 @@ tree.txt
 
 # --- Logs ---
 *.log
+
+brains.json
+views.py

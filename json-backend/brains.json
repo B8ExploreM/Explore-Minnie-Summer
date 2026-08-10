@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0.0",
     "student": "alice",
-    "last_saved": "2026-07-29T14:59:16.274869+00:00"
+    "last_saved": "2026-08-03T17:31:57.002171+00:00"
   },
   "progress": {
     "current_step": 2,
@@ -74,7 +74,14 @@
       "cat views.py",
       "nano views.py",
       "cd hello_project/",
-      "pwd"
+      "pwd",
+      "cd hello_project/",
+      "pwd",
+      "ls -l",
+      "cat urls.py",
+      "cat views.py",
+      "nano views.py",
+      "wget -qO- http://localhost/deploy/"
     ],
     "dirty": false
   }
