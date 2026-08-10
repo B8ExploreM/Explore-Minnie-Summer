@@ -4,7 +4,8 @@ import subprocess
 from datetime import datetime, timezone
 
 
-STATE_FILE  = os.environ.get("TUTOR_STATE_FILE", "/home/{student}/json-backend/brains.json")
+STATE_FILE = os.environ.get(
+    "TUTOR_STATE_FILE", "/home/{student}/json-backend/brains.json")
 PROJECT_DIR = os.environ.get("TUTOR_PROJECT_DIR", "/home/{student}/minnie")
 
 
@@ -14,7 +15,8 @@ def load_state(student: str) -> dict:
         with open(path, "r") as fp:
             return json.load(fp)
     except FileNotFoundError:
-        raise FileNotFoundError(f"No state file found for student '{student}' at {path}")
+        raise FileNotFoundError(
+            f"No state file found for student '{student}' at {path}")
     except json.JSONDecodeError as e:
         raise ValueError(f"State file is corrupt at {path}: {e}")
 
@@ -60,17 +62,19 @@ def get_hints(state: dict) -> list:
 
 
 def validate_step(step: dict, student: str) -> bool:
-    v     = step.get("validation", {})
+    v = step.get("validation", {})
     vtype = v.get("type")
     if vtype == "inotifywait":
-        target = os.path.join(PROJECT_DIR.format(student=student), v["target_file"])
+        target = os.path.join(PROJECT_DIR.format(
+            student=student), v["target_file"])
         if v.get("check") == "exists":
             return os.path.exists(target)
         if v.get("check") == "modified":
             return os.path.exists(target)
     if vtype == "curl_probe":
         result = subprocess.run(
-            ["curl", "-s", "-o", "/dev/null", "-w", "%{http_code}", "--max-time", "5", v["url"]],
+            ["curl", "-s", "-o", "/dev/null", "-w",
+                "%{http_code}", "--max-time", "5", v["url"]],
             capture_output=True, text=True,
         )
         try:
@@ -87,6 +91,18 @@ def record_command(state: dict, cmd: str, exit_code: int, student: str) -> None:
     save_state(state, student)
 
 
+def print_history(state: dict) -> None:
+    history = state.get("session", {}).get("command_history", [])
+    print()
+    print("===== Command History for this session =====")
+    if not history:
+        print("(no commands were recorded)")
+    else:
+        for i, cmd in enumerate(history, start=1):
+            print(f"{i:2d}. {cmd}")
+    print("==============================================")
+
+
 if __name__ == "__main__":
     import argparse
 
@@ -97,11 +113,16 @@ if __name__ == "__main__":
     parser.add_argument("--flush", action="store_true",
                         help="Flush state to disk on logout (called by trap)")
     parser.add_argument("--cmd", default="", help="The command that was run")
+    parser.add_argument("--history", action="store_true",
+                        help="Print the recorded command history and exit")
     args = parser.parse_args()
 
     state = load_state(args.student)
 
-    if args.validate is not None:
+    if args.history:
+        print_history(state)
+
+    elif args.validate is not None:
         record_command(state, args.cmd, args.validate, args.student)
         step = get_current_step(state)
         if step and not step.get("completed"):

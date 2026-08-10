@@ -1,10 +1,12 @@
 #!/bin/bash
 # This script helps users move through the Minnie Server project
 
+
 # Colors
 GREEN="\e[32m"
 BLUE="\e[34m"
 RESET="\e[0m"
+
 
 # --- Integration setup ---
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -12,44 +14,54 @@ STUDENT="${USER:-$(whoami)}"
 export TUTOR_STATE_FILE="${SCRIPT_DIR}/json-backend/brains.json"
 export TUTOR_PROJECT_DIR="${SCRIPT_DIR}/hello_project"
 
+
 # Start watcher.py in the background
-python3 "${SCRIPT_DIR}/watcher.py" --student "$STUDENT" &
+python3 "${SCRIPT_DIR}/watcher.py" --student "$STUDENT" > "${SCRIPT_DIR}/watcher.log" 2>&1 &
 WATCHER_PID=$!
 # Kill watcher when tutor exits
 trap "kill $WATCHER_PID 2>/dev/null" EXIT
 
+
 # Helper: record completed command to backend
 record() {
+    local cmd="$1"
+    local exit_code="${2:-0}"
     python3 "${SCRIPT_DIR}/json-backend/backend.py" \
-        --student "$STUDENT" --validate 0 --cmd "$1"
+        --student "$STUDENT" --validate "$exit_code" --cmd "$cmd"
 }
 # ---
 
+
 #This Script looks for exact matches for its string prompts to prevent malicious code from being injected.
 #If modified for more lax prompting, ensure that strings are escaped properly.
+
 
 usrPrompt() {
     local display_dir="${PWD/#$HOME/~}"
     printf "${GREEN}(Minnie)${BLUE} %s \$ ${RESET}" "$display_dir"
 }
 
+
 intro="Welcome to the Minnie Server, this project will help you gain experience with backend development."
 find_helloproj="Let's begin by locating the hello project directory, use the command: cd hello_project/"
 cmdERR="There was an issue with your command, check your spelling and try again."
 
-prompt="$(echo -n "$prompt" | xargs)"   # trims leading/trailing whitespace, collapses internal runs
+
 prompt_user() {
     read -e -p "$(usrPrompt)" prompt
+    prompt="$(echo -n "$prompt" | xargs)"   # trims leading/trailing whitespace, collapses internal runs
 }
+
 
 function verifyCD() {
     verified="false"
     while [ "$verified" == "false" ]; do
         if [ "$prompt" == "cd hello_project/" ]; then
             eval $prompt
+            last_status=$?
             if [ "$PWD" == "$expectedPWD" ]; then
                 echo "You have successfully moved into the hello project directory!"
-                record "$prompt"
+                record "$prompt" "$last_status"
                 verified="true"
             else
                 echo "$cmdERR"
@@ -63,19 +75,21 @@ function verifyCD() {
     done
 }
 
+
 function verifyPWD() {
     verified="false"
     while [ "$verified" == "false" ]; do
         if [ "$prompt" == "pwd" ]; then
             verified="true"
             eval $prompt
-            record "$prompt"
+            record "$prompt" "$?"
         else
             echo "$cmdERR"
             prompt_user
         fi
     done
 }
+
 
 function verifyListDir() {
     verified="false"
@@ -83,13 +97,14 @@ function verifyListDir() {
         if [ "$prompt" == "ls -l" ]; then
             verified="true"
             eval $prompt
-            record "$prompt"
+            record "$prompt" "$?"
         else
             echo "$cmdERR"
             prompt_user
         fi
     done
 }
+
 
 function verifyCatUrls() {
     verified="false"
@@ -97,7 +112,7 @@ function verifyCatUrls() {
         if [ "$prompt" == "cat urls.py" ]; then
             verified="true"
             eval $prompt
-            record "$prompt"
+            record "$prompt" "$?"
         else
             echo "$cmdERR"
             prompt_user
@@ -105,19 +120,21 @@ function verifyCatUrls() {
     done
 }
 
+
 function verifyCatViews() {
     verified="false"
     while [ "$verified" == "false" ]; do
         if [ "$prompt" == "cat views.py" ]; then
             verified="true"
             eval $prompt
-            record "$prompt"
+            record "$prompt" "$?"
         else
             echo "$cmdERR"
             prompt_user
         fi
     done
 }
+
 
 function verifyNano() {
     echo "Waiting for you to save your changes to views.py..."
@@ -127,13 +144,14 @@ function verifyNano() {
         if [ "$prompt" == "nano views.py" ]; then
             eval $prompt
             verified="true"
-            record "$prompt"
+            record "$prompt" "$?"
         else
             echo "$cmdERR"
             prompt_user
         fi
     done
 }
+
 
 function verifyWget() {
     verified="false"
@@ -141,7 +159,7 @@ function verifyWget() {
         if [ "$prompt" == "wget -qO- http://localhost/deploy/" ]; then
             verified="true"
             eval $prompt
-            record "$prompt"
+            record "$prompt" "$?"
         else
             echo "$cmdERR"
             prompt_user
@@ -149,43 +167,56 @@ function verifyWget() {
     done
 }
 
+
 echo $intro
 echo $find_helloproj
+
 
 expectedPWD="${SCRIPT_DIR}/hello_project"
 prompt_user
 verifyCD
 
+
 echo "You should now be in the hello project folder, you can verify this by using the pwd command, try it now."
 echo
 
+
 prompt_user
 verifyPWD
+
 
 echo
 echo "Now that we've verified we are in the right place, let's explore the files in this directory."
 echo "Using \"ls -l\" take a look at the files in this directory, then use the command \"cat <filename>\" To print the contents of a file."
 
+
 prompt_user
 verifyListDir
+
 
 echo
 echo "Great job, now you can see the list of all the files in your working directory. Use \"cat urls.py\" to print your urls.py file."
 
+
 prompt_user
 verifyCatUrls
+
 
 echo
 echo "Good work, now print the contents of your views.py file"
 
+
 prompt_user
 verifyCatViews
+
 
 echo
 echo "Now it's time to get ready to make some changes on your own, \"nano views.py\" to open the nano text editor, then change the message in the view function."
 
+
 prompt_user
 verifyNano
+
 
 echo
 echo "Your file has been saved. Now let's confirm your change is live on the server."
@@ -194,7 +225,11 @@ echo
 prompt_user
 verifyWget
 
+
 echo
 echo "Congratulations! You have completed the Minnie backend development exercise."
 echo "You successfully edited a Django view and saw your change reflected on the server."
 echo
+
+
+python3 "${SCRIPT_DIR}/json-backend/backend.py" --student "$STUDENT" --history
