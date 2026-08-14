@@ -1,66 +1,63 @@
-import './App.css'
-import AboutMe from './components/AboutMe'
+import { useState } from 'react';
+import './App.css';
+import { steps } from './data/steps';
+import TutorialStep from './components/TutorialStep';
 
 function App() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const current = steps[currentIndex];
+  const isFirst = currentIndex === 0;
+  const isLast = currentIndex === steps.length - 1;
+
   return (
     <>
-      <section id="center">
-        <div className="hero">
-          {/* <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" /> */}
-        </div>
-        <div>
-          <h1>Project Explore Minnie</h1>
-        </div>
-      </section>
+      <header id="hero">
+        <h1>Minnie Server Guide</h1>
+        <p>A self-paced guide to editing and deploying your first Django view. By Ramsa Ombati</p>
+      </header>
 
-      <div className="ticks"></div>
+      <main id="tutorial">
+        <TutorialStep step={current} total={steps.length} />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://docs.google.com/document/d/1j_HFfcNs1GapQ7GyLTcp_hQ1MLmD7oOmzTN0KzrkkAo/edit?tab=t.0" target="_blank">
-                <img className="button-icon"/>
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>View our work</p>
-          <ul>
-            <li>
-              <a href="https://github.com/B8ExploreM/Explore-Minnie" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-      <div className="ticks"></div>
-      <section id="spacer">
-      <AboutMe/>
-      </section>
+        <nav className="step-nav">
+          <button
+            disabled={isFirst}
+            onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
+          >
+            ← Previous
+          </button>
+
+          <div className="step-dots">
+            {steps.map((s, i) => (
+              <button
+                key={s.id}
+                className={`dot ${i === currentIndex ? 'active' : ''}`}
+                onClick={() => setCurrentIndex(i)}
+                aria-label={`Go to step ${s.id}`}
+              />
+            ))}
+          </div>
+
+          <button
+            disabled={isLast}
+            onClick={() => setCurrentIndex((i) => Math.min(steps.length - 1, i + 1))}
+          >
+            Next →
+          </button>
+        </nav>
+
+        {isLast && (
+          <div className="completion-banner">
+            <h2>You've reached the final step!</h2>
+            <p>
+              Once your wget command shows your edited message, you've
+              successfully completed the exercise.
+            </p>
+          </div>
+        )}
+      </main>
     </>
-  )
+  );
 }
 
-export default App
+export default App;

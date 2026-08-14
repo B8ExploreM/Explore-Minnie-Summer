@@ -15,7 +15,7 @@ export TUTOR_STATE_FILE="${SCRIPT_DIR}/json-backend/brains.json"
 export TUTOR_PROJECT_DIR="${SCRIPT_DIR}/hello_project"
 
 
-# Start watcher.py in the background
+# Start watcher.py in the background (output redirected so it doesn't interleave with prompts)
 python3 "${SCRIPT_DIR}/watcher.py" --student "$STUDENT" > "${SCRIPT_DIR}/watcher.log" 2>&1 &
 WATCHER_PID=$!
 # Kill watcher when tutor exits
@@ -28,6 +28,31 @@ record() {
     local exit_code="${2:-0}"
     python3 "${SCRIPT_DIR}/json-backend/backend.py" \
         --student "$STUDENT" --validate "$exit_code" --cmd "$cmd"
+}
+# ---
+
+
+# --- Replay of previously validated commands ---
+# Commands the student has already successfully run earlier in this session.
+# Re-typing one of these at a later prompt just executes it again instead of
+# tripping the "there was a problem" error.
+PAST_VALID_CMDS=()
+
+is_known_cmd() {
+    local input="$1"
+    local c
+    for c in "${PAST_VALID_CMDS[@]}"; do
+        if [[ "$input" == "$c" ]]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
+replay_cmd() {
+    eval $prompt
+    local ec=$?
+    record "$prompt" "$ec"
 }
 # ---
 
@@ -62,12 +87,16 @@ function verifyCD() {
             if [ "$PWD" == "$expectedPWD" ]; then
                 echo "You have successfully moved into the hello project directory!"
                 record "$prompt" "$last_status"
+                PAST_VALID_CMDS+=("$prompt")
                 verified="true"
             else
                 echo "$cmdERR"
                 prompt_user
                 continue
             fi
+        elif is_known_cmd "$prompt"; then
+            replay_cmd
+            prompt_user
         else
             echo "$cmdERR"
             prompt_user
@@ -83,6 +112,10 @@ function verifyPWD() {
             verified="true"
             eval $prompt
             record "$prompt" "$?"
+            PAST_VALID_CMDS+=("$prompt")
+        elif is_known_cmd "$prompt"; then
+            replay_cmd
+            prompt_user
         else
             echo "$cmdERR"
             prompt_user
@@ -98,6 +131,10 @@ function verifyListDir() {
             verified="true"
             eval $prompt
             record "$prompt" "$?"
+            PAST_VALID_CMDS+=("$prompt")
+        elif is_known_cmd "$prompt"; then
+            replay_cmd
+            prompt_user
         else
             echo "$cmdERR"
             prompt_user
@@ -113,6 +150,10 @@ function verifyCatUrls() {
             verified="true"
             eval $prompt
             record "$prompt" "$?"
+            PAST_VALID_CMDS+=("$prompt")
+        elif is_known_cmd "$prompt"; then
+            replay_cmd
+            prompt_user
         else
             echo "$cmdERR"
             prompt_user
@@ -128,6 +169,10 @@ function verifyCatViews() {
             verified="true"
             eval $prompt
             record "$prompt" "$?"
+            PAST_VALID_CMDS+=("$prompt")
+        elif is_known_cmd "$prompt"; then
+            replay_cmd
+            prompt_user
         else
             echo "$cmdERR"
             prompt_user
@@ -145,6 +190,12 @@ function verifyNano() {
             eval $prompt
             verified="true"
             record "$prompt" "$?"
+            PAST_VALID_CMDS+=("$prompt")
+            echo "Reloading the server so your change takes effect..."
+            touch "${TUTOR_PROJECT_DIR}/../config/wsgi.py" 2>/dev/null
+        elif is_known_cmd "$prompt"; then
+            replay_cmd
+            prompt_user
         else
             echo "$cmdERR"
             prompt_user
@@ -160,6 +211,10 @@ function verifyWget() {
             verified="true"
             eval $prompt
             record "$prompt" "$?"
+            PAST_VALID_CMDS+=("$prompt")
+        elif is_known_cmd "$prompt"; then
+            replay_cmd
+            prompt_user
         else
             echo "$cmdERR"
             prompt_user
