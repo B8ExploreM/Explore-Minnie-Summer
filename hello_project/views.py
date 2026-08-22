@@ -6,4 +6,4 @@ from django.http import HttpResponse
 
 def index(request):
 
-    return HttpResponse("This is a student's dynamically generated home page!  Hello")
+    return render(request, 'index.html')

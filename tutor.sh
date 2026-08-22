@@ -68,7 +68,7 @@ usrPrompt() {
 
 
 intro="Welcome to the Minnie Server, this project will help you gain experience with backend development."
-find_helloproj="Let's begin by locating the hello project directory, use the command: cd hello_project/"
+find_helloproj="Let's begin by locating the hello project directory, use the command: 'cd hello_project/'"
 cmdERR="There was an issue with your command, check your spelling and try again."
 
 
@@ -182,16 +182,14 @@ function verifyCatViews() {
 
 
 function verifyNano() {
-    echo "Waiting for you to save your changes to views.py..."
-    echo "(watcher.py will detect when you save the file)"
+    echo "Waiting for you to save your changes to index.html..."
     verified="false"
     while [ "$verified" == "false" ]; do
-        if [ "$prompt" == "nano views.py" ]; then
+        if [ "$prompt" == "nano templates/index.html" ]; then
             eval $prompt
             verified="true"
             record "$prompt" "$?"
             PAST_VALID_CMDS+=("$prompt")
-            echo "Reloading the server so your change takes effect..."
             touch "${TUTOR_PROJECT_DIR}/../config/wsgi.py" 2>/dev/null
         elif is_known_cmd "$prompt"; then
             replay_cmd
@@ -232,7 +230,7 @@ prompt_user
 verifyCD
 
 
-echo "You should now be in the hello project folder, you can verify this by using the pwd command, try it now."
+echo "You should now be in the hello project folder, you can verify this by using the 'pwd' command, try it now."
 echo
 
 
@@ -241,7 +239,7 @@ verifyPWD
 
 
 echo
-echo "Now that we've verified we are in the right place, let's explore the files in this directory."
+echo "Let's explore the files in this directory."
 echo "Using \"ls -l\" take a look at the files in this directory, then use the command \"cat <filename>\" To print the contents of a file."
 
 
@@ -258,7 +256,7 @@ verifyCatUrls
 
 
 echo
-echo "Good work, now print the contents of your views.py file"
+echo "Good work, now print the contents of your views.py file using 'cat<filename>'"
 
 
 prompt_user
@@ -266,7 +264,7 @@ verifyCatViews
 
 
 echo
-echo "Now it's time to get ready to make some changes on your own, \"nano views.py\" to open the nano text editor, then change the message in the view function."
+echo "Now it's time to get ready to make some changes on your own, \"nano templates/index.html\" to open the nano text editor, then change the message in the view function."
 
 
 prompt_user
@@ -283,7 +281,7 @@ verifyWget
 
 echo
 echo "Congratulations! You have completed the Minnie backend development exercise."
-echo "You successfully edited a Django view and saw your change reflected on the server."
+echo "You successfully edited an HTML file and navigated the backend reflected on the server."
 echo
 
 

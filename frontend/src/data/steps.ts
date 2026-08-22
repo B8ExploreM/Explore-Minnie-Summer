@@ -49,11 +49,12 @@ export const steps: TutorialStep[] = [
   },
   {
     id: 6,
-    title: "Edit the view",
-    instruction: "Open the file in a text editor and change the message:",
-    command: "nano views.py",
+    title: "Edit the index page",
+    instruction:
+      "Open the HTML template in a text editor and change its content:",
+    command: "nano templates/index.html",
     explanation:
-      "Modify the string inside HttpResponse(...) to anything you like, then save (Ctrl+O) and exit (Ctrl+X) in nano.",
+      "This is the actual HTML rendered to the browser — try changing the heading, adding a paragraph, or tweaking the structure to get a feel for how Django serves front-end content.",
   },
   {
     id: 7,

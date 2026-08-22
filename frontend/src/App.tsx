@@ -13,7 +13,7 @@ function App() {
     <>
       <header id="hero">
         <h1>Minnie Server Guide</h1>
-        <p>A self-paced guide to editing and deploying your first Django view. By Ramsa Ombati</p>
+        <p>A self-paced guide to editing and deploying your first Django view.</p>
       </header>
 
       <main id="tutorial">
