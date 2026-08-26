@@ -1,3 +1,3 @@
-# JSON Backend Development
+# Explore Minnie Summer 
 
-### This branch is for the development of the JSON backend.
+### Seperated branch worked on in the Summer by Ramsa Ombati
