@@ -1,8 +1,8 @@
+
 import json
 import os
 import subprocess
 from datetime import datetime, timezone
-
 
 STATE_FILE = os.environ.get(
     "TUTOR_STATE_FILE", "/home/{student}/json-backend/brains.json")
@@ -64,6 +64,7 @@ def get_hints(state: dict) -> list:
 def validate_step(step: dict, student: str) -> bool:
     v = step.get("validation", {})
     vtype = v.get("type")
+
     if vtype == "inotifywait":
         target = os.path.join(PROJECT_DIR.format(
             student=student), v["target_file"])
@@ -71,16 +72,18 @@ def validate_step(step: dict, student: str) -> bool:
             return os.path.exists(target)
         if v.get("check") == "modified":
             return os.path.exists(target)
+
     if vtype == "curl_probe":
         result = subprocess.run(
             ["curl", "-s", "-o", "/dev/null", "-w",
-                "%{http_code}", "--max-time", "5", v["url"]],
+             "%{http_code}", "--max-time", "5", v["url"]],
             capture_output=True, text=True,
         )
         try:
             return int(result.stdout.strip()) == v.get("expected_status", 200)
         except ValueError:
             return False
+
     return False
 
 
@@ -103,6 +106,13 @@ def print_history(state: dict) -> None:
     print("==============================================")
 
 
+def reset_history(state: dict, student: str) -> None:
+    state["session"]["command_history"] = []
+    state["session"]["dirty"] = True
+    save_state(state, student)
+    print("Command history cleared for this session.")
+
+
 if __name__ == "__main__":
     import argparse
 
@@ -115,11 +125,16 @@ if __name__ == "__main__":
     parser.add_argument("--cmd", default="", help="The command that was run")
     parser.add_argument("--history", action="store_true",
                         help="Print the recorded command history and exit")
+    parser.add_argument("--reset", action="store_true",
+                        help="Clear the command history for a fresh session")
     args = parser.parse_args()
 
     state = load_state(args.student)
 
-    if args.history:
+    if args.reset:
+        reset_history(state, args.student)
+
+    elif args.history:
         print_history(state)
 
     elif args.validate is not None:
@@ -134,7 +149,7 @@ if __name__ == "__main__":
                 print(f"✓ Step {step['id']} complete!")
             else:
                 for hint in step.get("hints", []):
-                    print(f"  → {hint}")
+                    print(f" → {hint}")
 
     elif args.flush:
         save_state(state, args.student)

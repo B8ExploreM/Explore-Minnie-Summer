@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0.0",
     "student": "alice",
-    "last_saved": "2026-08-26T00:13:31.893849+00:00"
+    "last_saved": "2026-08-26T00:54:00.747423+00:00"
   },
   "progress": {
     "current_step": 2,
@@ -56,9 +56,7 @@
   ],
   "session": {
     "ssh_login_count": 3,
-    "command_history": [
-
-    ],
+    "command_history": [],
     "dirty": false
   }
 }

@@ -13,6 +13,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 STUDENT="${USER:-$(whoami)}"
 export TUTOR_STATE_FILE="${SCRIPT_DIR}/json-backend/brains.json"
 export TUTOR_PROJECT_DIR="${SCRIPT_DIR}/hello_project"
+python3 "${SCRIPT_DIR}/json-backend/backend.py" --student "$STUDENT" --reset
 
 
 # Start watcher.py in the background (output redirected so it doesn't interleave with prompts)
