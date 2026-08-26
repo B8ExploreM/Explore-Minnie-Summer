@@ -66,9 +66,9 @@ usrPrompt() {
     printf "${GREEN}(Minnie)${BLUE} %s \$ ${RESET}" "$display_dir"
 }
 
-
-intro="Welcome to the Minnie Server, this project will help you gain experience with backend development."
-find_helloproj="Let's begin by locating the hello project directory, use the command: 'cd hello_project/'"
+echo
+intro=" -> Welcome to the Minnie Server, this project will help you gain experience with backend development and frontend basics."
+find_helloproj="Let's begin by locating the hello project directory, use the command: \"cd hello_project/\""
 cmdERR="There was an issue with your command, check your spelling and try again."
 
 
@@ -180,6 +180,24 @@ function verifyCatViews() {
     done
 }
 
+function verifyNanoUrls() {
+    verified="false"
+    while [ "$verified" == "false" ]; do
+        if [ "$prompt" == "nano urls.py" ]; then
+            eval $prompt
+            verified="true"
+            record "$prompt" "$?"
+            PAST_VALID_CMDS+=("$prompt")
+        elif is_known_cmd "$prompt"; then
+            replay_cmd
+            prompt_user
+        else
+            echo "$cmdERR"
+            prompt_user
+        fi
+    done
+}
+
 
 function verifyNano() {
     echo "Waiting for you to save your changes to index.html..."
@@ -220,6 +238,24 @@ function verifyWget() {
     done
 }
 
+function verifyHistory() {
+    verified="false"
+    while [ "$verified" == "false" ]; do
+        if [ "$prompt" == "history" ]; then
+            verified="true"
+            record "$prompt" "0"
+            PAST_VALID_CMDS+=("$prompt")
+            python3 "${SCRIPT_DIR}/json-backend/backend.py" --student "$STUDENT" --history
+        elif is_known_cmd "$prompt"; then
+            replay_cmd
+            prompt_user
+        else
+            echo "$cmdERR"
+            prompt_user
+        fi
+    done
+}
+
 
 echo $intro
 echo $find_helloproj
@@ -230,7 +266,7 @@ prompt_user
 verifyCD
 
 
-echo "You should now be in the hello project folder, you can verify this by using the 'pwd' command, try it now."
+echo "-> You should now be in the hello project folder, verify this by using the \"pwd\" command."
 echo
 
 
@@ -240,7 +276,7 @@ verifyPWD
 
 echo
 echo "Let's explore the files in this directory."
-echo "Using \"ls -l\" take a look at the files in this directory, then use the command \"cat <filename>\" To print the contents of a file."
+echo "-> Using \"ls -l\" take a look at the files in this directory"
 
 
 prompt_user
@@ -248,7 +284,7 @@ verifyListDir
 
 
 echo
-echo "Great job, now you can see the list of all the files in your working directory. Use \"cat urls.py\" to print your urls.py file."
+echo "-> Great job, now you can see the list of all the files in your working directory. Use \"cat urls.py\" to display the file."
 
 
 prompt_user
@@ -256,7 +292,15 @@ verifyCatUrls
 
 
 echo
-echo "Good work, now print the contents of your views.py file using 'cat<filename>'"
+echo "-> Now let's make a change of your own. Run \"nano urls.py\" to open the file and edit it."
+
+
+prompt_user
+verifyNanoUrls
+
+
+echo
+echo "-> Good work, now print the contents of your views.py file using 'cat<filename>'"
 
 
 prompt_user
@@ -264,7 +308,7 @@ verifyCatViews
 
 
 echo
-echo "Now it's time to get ready to make some changes on your own, \"nano templates/index.html\" to open the nano text editor, then change the message in the view function."
+echo "-> Now it's time to get ready to make some changes on your own, \"nano templates/index.html\" to open the nano text editor, then change the message in the view function."
 
 
 prompt_user
@@ -272,7 +316,7 @@ verifyNano
 
 
 echo
-echo "Your file has been saved. Now let's confirm your change is live on the server."
+echo "-> Your file has been saved. Now let's confirm your change is live. That is a capital O not a zero "
 echo "Run: wget -qO- http://localhost/deploy/"
 echo
 prompt_user
@@ -281,8 +325,22 @@ verifyWget
 
 echo
 echo "Congratulations! You have completed the Minnie backend development exercise."
-echo "You successfully edited an HTML file and navigated the backend reflected on the server."
+echo "You successfully edited an HTML file and navigated the backend and reflected the changes using wget."
+echo
+echo "-> Run \"history\" to see all the commands you have run while in the tutor"
+echo "* You can press Ctrl+C at any time to exit the tutor."
 echo
 
 
-python3 "${SCRIPT_DIR}/json-backend/backend.py" --student "$STUDENT" --history
+prompt_user
+verifyHistory
+
+
+echo
+echo "-> You can press Ctrl+C at any time to exit the tutor."
+
+
+trap 'exit 0' SIGINT
+while true; do
+    sleep 1
+done
